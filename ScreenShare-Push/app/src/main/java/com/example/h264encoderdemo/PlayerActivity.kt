@@ -1,21 +1,39 @@
-package com.example.h264playerdemo
+package com.example.h264encoderdemo
 
+import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.SurfaceHolder
-import com.example.h264playerdemo.databinding.ActivityMainBinding
+import com.example.h264encoderdemo.coder.decoder.H264Decoder
+import com.example.h264encoderdemo.databinding.ActivityPlayerBinding
+import com.example.h264encoderdemo.transmit.Receiver
+import kotlin.properties.Delegates
 
-class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
+class PlayerActivity : BaseActivity(), SurfaceHolder.Callback {
 
-    private var binding: ActivityMainBinding? = null
+    companion object {
+        private const val addressKey = "address"
+        fun launch(caller: Context, address: String) {
+            val intent = Intent(caller, PlayerActivity::class.java)
+            intent.putExtra(addressKey, address)
+            caller.startActivity(intent)
+        }
+    }
+
+    private var binding: ActivityPlayerBinding? = null
 //    private var player: H265Player? = null
     private var player: H264Decoder? = null
     private var receiver: Receiver? = null
+    private var address: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding?.root)
+        intent.getStringExtra(addressKey)?.let {
+            address = it
+        }
         binding?.surfaceView?.holder?.addCallback(this)
     }
 
@@ -23,7 +41,9 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 //        player  = H265Player(p0.surface)
         player  = H264Decoder(p0.surface)
         player?.play()
-        receiver = Receiver()
+        address?.let {
+            receiver = Receiver(it)
+        }
         receiver?.listener = player
         receiver?.start()
     }

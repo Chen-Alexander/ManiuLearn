@@ -9,8 +9,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     private var binding: ActivityMainBinding? = null
 //    private var player: H265Player? = null
-    private var player: H264Player? = null
-    private var socketLive: SocketLive? = null
+    private var player: H264Decoder? = null
+    private var receiver: Receiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,11 +21,11 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     override fun surfaceCreated(p0: SurfaceHolder) {
 //        player  = H265Player(p0.surface)
-        player  = H264Player(p0.surface)
+        player  = H264Decoder(p0.surface)
         player?.play()
-        socketLive = SocketLive()
-        socketLive?.listener = player
-        socketLive?.start()
+        receiver = Receiver()
+        receiver?.listener = player
+        receiver?.start()
     }
 
     override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     override fun surfaceDestroyed(p0: SurfaceHolder) {
         player?.dispose()
-        socketLive?.dispose()
+        receiver?.dispose()
     }
 
     override fun onDestroy() {

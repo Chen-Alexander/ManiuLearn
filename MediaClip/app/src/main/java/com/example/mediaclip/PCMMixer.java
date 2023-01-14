@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class PCMProcessor {
+public class PCMMixer {
     public static void mixPcm(String pcm1Path, String pcm2Path, String toPath
             , int vol1, int vol2) throws IOException {
 

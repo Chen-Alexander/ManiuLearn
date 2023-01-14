@@ -16,7 +16,7 @@ import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 
-object MusicProcess {
+object MediaProcessor {
     private const val timeout = 1_000L
     private const val tag = "MusicProcess"
     private const val defaultSampleRate = 44100
@@ -37,7 +37,7 @@ object MusicProcess {
         val mixedPcm = File(fileDir, "mixed.pcm")
 //        mixPcm(videoPcmFile.absolutePath, audioPcmFile.absolutePath, videoVolume, audioVolume,
 //            mixedPcm.absolutePath)
-        TestUtil.mixPcm(videoPcmFile.absolutePath, audioPcmFile.absolutePath, mixedPcm.absolutePath,
+        PCMMixer.mixPcm(videoPcmFile.absolutePath, audioPcmFile.absolutePath, mixedPcm.absolutePath,
             mediaVolume, audioVolume)
 
         val wavFile = File(fileDir, mixedPcm.name.plus(".wav"))

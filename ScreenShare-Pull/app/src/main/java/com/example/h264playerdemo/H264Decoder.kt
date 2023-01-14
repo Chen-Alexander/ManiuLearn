@@ -2,12 +2,10 @@ package com.example.h264playerdemo
 
 import android.media.MediaCodec
 import android.media.MediaFormat
-import android.util.Log
 import android.view.Surface
 import java.io.*
-import java.lang.Exception
 
-class H264Player(
+class H264Decoder(
     surface: Surface
 ) : ScreenShareFrameListener {
     private val tag = "H264Player"

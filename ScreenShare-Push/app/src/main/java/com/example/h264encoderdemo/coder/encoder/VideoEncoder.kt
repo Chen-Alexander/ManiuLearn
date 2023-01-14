@@ -1,54 +1,40 @@
 package com.example.h264encoderdemo.coder.encoder
 
 import android.media.MediaCodec
-import android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
-import android.media.MediaCodecInfo
-import android.media.MediaFormat
+import android.os.Bundle
+import android.util.Log
 import android.view.Surface
+import com.example.h264encoderdemo.queue.MediaBufferQueue
 import com.example.h264encoderdemo.util.FileUtils
-import java.io.IOException
+import java.lang.System.currentTimeMillis
 import java.nio.ByteBuffer
 import kotlin.experimental.and
+import kotlin.math.roundToInt
 
-class H264Encoder(
-    private var width: Int,
-    private var height: Int
+abstract class VideoEncoder(
+    protected var width: Int,
+    protected var height: Int,
+    protected val fps: Int,
+    protected val gopSize: Int,
+    private val queue: MediaBufferQueue
 ) : Encoder {
-    private val tag = "H264Encoder"
+    open val tag = "VideoEncoder"
     private val sPSNalu = 7
     private val iNalu = 5
-    private var mediaCodec: MediaCodec? = null
+    protected var mediaCodec: MediaCodec? = null
+
+    // 用于记录强制输出I帧的时间
+    private var forceIFrameTS = currentTimeMillis()
+    private val forIFrameBundle: Bundle by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        Bundle().apply {
+            //立即刷新 让下一帧是关键帧
+            this.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0)
+        }
+    }
 
     @Volatile
     private var disposed = false
-    var dataListener: ScreenShareDataListener? = null
     private var sPSPPS: ByteArray? = null
-
-    override fun init() {
-        try {
-            mediaCodec = MediaCodec.createEncoderByType("video/avc")
-            val mediaFormat = MediaFormat.createVideoFormat(
-                MediaFormat.MIMETYPE_VIDEO_AVC, width,
-                height
-            )
-            val fps = 20
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, fps)
-            // GOP大小
-            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 2)
-//            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3 / 2 * fps)
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, width * height)
-            // 颜色格式为surface，因为我们是通过surface获取数据的
-            mediaFormat.setInteger(
-                MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
-            )
-            // 此处第二个参数只在解码时需要传，现在是编码，不需要渲染，所以不需要传
-            // flag: CONFIGURE_FLAG_ENCODE   什么意思？
-            mediaCodec?.configure(mediaFormat, null, null, CONFIGURE_FLAG_ENCODE)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
 
     override fun createInputSurface(): Surface? {
         return mediaCodec?.createInputSurface()
@@ -60,30 +46,48 @@ class H264Encoder(
 
     override fun run() {
         mediaCodec?.start()
+        // 初始化forceIFrameTS
+        forceIFrameTS = currentTimeMillis()
         // 此处不需要再通过inputBuffer给mediaCodec喂数据，mediaCodec会自动检查inputSurface中的
         // 数据进行编码，此处只需要通过outputBuffer拿编码后的输出数据即可
         val bufferInfo = MediaCodec.BufferInfo()
         while (true) {
+            Log.i(tag, "disposed is $disposed")
             if (disposed) {
                 break
             }
+            // 在合适的时间强制输出关键帧
+            if (isForceIFrameTime(forceIFrameTS)) {
+                mediaCodec?.setParameters(forIFrameBundle)
+                forceIFrameTS = currentTimeMillis()
+            }
+            Log.i(tag, "ready execute dequeueOutputBuffer.")
             val outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, 10 * 1000)
+            Log.i(tag, "dequeueOutputBuffer outputIndex is $outputIndex.")
             if (outputIndex != null && outputIndex > -1) {
                 val byteBuffer = mediaCodec?.getOutputBuffer(outputIndex)
                 // 把byteBuffer内的数据转移出来
                 byteBuffer?.let { buffer ->
-                    val byteArray = dealFrame(buffer, bufferInfo)
-                    byteArray?.let {
-                        dataListener?.onFrame(it)
-                        writeFile(it)
+                    val index = dealFrame(buffer, bufferInfo)
+                    index?.let {
+                        enqueueBuf(it)
                     }
                 }
                 mediaCodec?.releaseOutputBuffer(outputIndex, false)
             }
         }
+        // dispose mediaCodec
+        mediaCodec?.release()
+        mediaCodec = null
     }
 
-    private fun dealFrame(byteBuffer: ByteBuffer, bufferInfo: MediaCodec.BufferInfo): ByteArray? {
+    private fun isForceIFrameTime(curTS: Long): Boolean {
+        val interval = ((gopSize.toFloat() * 2.0F) / fps.toFloat()).roundToInt() * 1000L
+        val dif = currentTimeMillis() - curTS
+        return dif > interval
+    }
+
+    private fun dealFrame(byteBuffer: ByteBuffer, bufInfo: MediaCodec.BufferInfo): Int? {
         var offset = 4
         if (byteBuffer[2].compareTo(0x01) == 0) {
             offset = 3
@@ -92,38 +96,59 @@ class H264Encoder(
         when ((byteBuffer[offset] and 0x1F).toInt()) {
             sPSNalu -> {
                 // 缓存SPS/PPS帧
-                sPSPPS = ByteArray(bufferInfo.size)
-                byteBuffer.get(sPSPPS)
+                sPSPPS = ByteArray(bufInfo.size)
+                byteBuffer.get(sPSPPS, 0, bufInfo.size)
             }
             iNalu -> {
                 sPSPPS?.let {
                     // 每个IDR帧前边都加上SPS/PPS
-                    val byteArray = ByteArray(bufferInfo.size)
-                    byteBuffer.get(byteArray)
-                    val newBuf = ByteArray(it.size + bufferInfo.size)
-                    System.arraycopy(it, 0, newBuf, 0, it.size)
-                    System.arraycopy(byteArray, 0, newBuf, it.size, bufferInfo.size)
-                    return newBuf
+                    val pair = dequeueBuf(it.size + bufInfo.size)
+                    pair?.let { _ ->
+                        System.arraycopy(it, 0, pair.second, 0, it.size)
+                        byteBuffer.get(pair.second, it.size, bufInfo.size)
+                        return pair.first
+                    }
                 }
             }
             else -> {
                 // 其他帧类型直接发送
-                val byteArray = ByteArray(bufferInfo.size)
-                byteBuffer.get(byteArray)
-                return byteArray
+                val pair = dequeueBuf(bufInfo.size)
+                pair?.let { _ ->
+                    kotlin.runCatching {
+                        byteBuffer.get(pair.second, 0, bufInfo.size)
+                    }.onFailure {
+                        it.printStackTrace()
+                    }
+                    return pair.first
+                }
             }
         }
         return null
     }
 
+    private fun dequeueBuf(size: Int): Pair<Int, ByteArray>? {
+        val index = queue.dequeue(size)
+        if (index > -1) {
+            val tmp = queue.getBuf(index)
+            return Pair(index, tmp.buf)
+        }
+        Log.e(tag, "未获取到可用缓冲区!")
+        // 获取下标小于0，说明现在无可用缓冲区(当然也可以死循环获取)
+        return null
+    }
+
+    private fun enqueueBuf(index: Int) {
+        // for debug
+        writeFile(queue.getBuf(index).buf)
+        queue.enqueue(index)
+    }
+
     private fun writeFile(byteArray: ByteArray) {
         FileUtils.writeBytes(byteArray)
-        FileUtils.writeContent(byteArray)
     }
 
     override fun dispose() {
+        Log.d(tag, "dispose() called")
         disposed = true
-        mediaCodec?.release()
-        mediaCodec = null
     }
 }

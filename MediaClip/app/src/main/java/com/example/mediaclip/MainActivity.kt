@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.SeekBar
@@ -30,7 +31,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         checkPermission(this)
         videoView = findViewById(R.id.videoView)
-        //        rangeSeekBar = findViewById(R.id.rangeSeekBar);
         musicSeekBar = findViewById(R.id.musicSeekBar)
         videoSeekBar = findViewById(R.id.videoSeekBar)
         musicSeekBar?.max = 100
@@ -82,23 +82,10 @@ class MainActivity : AppCompatActivity() {
         videoView!!.setOnPreparedListener { mp ->
             duration = mp.duration / 1000
             mp.isLooping = true
-            //                rangeSeekBar.setRange(0, duration);
-            //                rangeSeekBar.setValue(0, duration);
-            //                rangeSeekBar.setEnabled(true);
-            //                rangeSeekBar.requestLayout();
-            //                rangeSeekBar.setOnRangeChangedListener(new RangeSeekBar.OnRangeChangedListener() {
-            //                    @Override
-            //                    public void onRangeChanged(RangeSeekBar view, float min, float max, boolean isFromUser) {
-            //                        videoView.seekTo((int) min * 1000);
-            //                    }
-            //                });
-            val handler = Handler()
-            runnable =
-                Runnable { //                        if (videoView.getCurrentPosition() >= rangeSeekBar.getCurrentRange()[1] * 1000) {
-                    //                            videoView.seekTo((int) rangeSeekBar.getCurrentRange()[0] * 1000);
-                    //                        }
-                    handler.postDelayed(runnable!!, 1000)
-                }
+            val handler = Handler(Looper.getMainLooper())
+            runnable = Runnable {
+                handler.postDelayed(runnable!!, 1000)
+            }
             handler.postDelayed(runnable!!, 1000)
         }
     }
@@ -124,13 +111,12 @@ class MainActivity : AppCompatActivity() {
             override fun run() {
                 try {
                     Log.e(TAG, "videoVolume:$videoVolume, musicVolume：$musicVolume")
-                    MusicProcess.mixAudioTrack(
+                    MediaProcessor.mixAudioTrack(
                         this@MainActivity,
                         videoFile.absolutePath,
                         audioFile.absolutePath,
                         outputFile.absolutePath,
-                        (60 *
-                                1000 * 1000),
+                        (60 * 1000 * 1000),
                         (100 * 1000 * 1000).toLong(),
                         videoVolume,
                         musicVolume

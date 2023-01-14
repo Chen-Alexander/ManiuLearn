@@ -1,4 +1,4 @@
-package com.example.h264encoderdemo.util
+package com.alexander.discovery.util
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -11,7 +11,7 @@ object NetUtil {
     @Throws(IOException::class)
     fun getLocalIP(context: Context): String? {
         val info = (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetworkInfo
-        if (info.type == ConnectivityManager.TYPE_WIFI) {
+        if (info != null && info.type == ConnectivityManager.TYPE_WIFI) {
             val wifiMg = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             val wifiInfo = wifiMg.connectionInfo
             val ip = intIP2StringIP(wifiInfo.ipAddress)

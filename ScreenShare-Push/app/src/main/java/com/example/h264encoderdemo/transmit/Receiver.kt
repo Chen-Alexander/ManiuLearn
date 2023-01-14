@@ -1,4 +1,4 @@
-package com.example.h264playerdemo
+package com.example.h264encoderdemo.transmit
 
 import android.util.Log
 import org.java_websocket.client.WebSocketClient
@@ -7,13 +7,13 @@ import java.lang.Exception
 import java.net.URI
 import java.nio.ByteBuffer
 
-class SocketLive {
-    private val tag = "SocketLive"
+class Receiver(private val address: String) {
+    private val tag = "Receiver"
     private var socketClient: SocketClient? = null
     var listener: ScreenShareFrameListener? = null
 
     fun start() {
-        socketClient = SocketClient(URI.create("ws://192.168.0.105:59880"), listener)
+        socketClient = SocketClient(URI.create("ws://".plus(address)), listener)
         socketClient?.connect()
     }
 

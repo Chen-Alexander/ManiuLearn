@@ -1,81 +1,99 @@
 package com.example.h264encoderdemo
 
-import android.Manifest
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.graphics.Point
+import android.hardware.display.DisplayManager
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
+import android.widget.Toast.LENGTH_SHORT
+import android.widget.Toast.makeText
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContract
 import com.example.h264encoderdemo.coder.encoder.H264Encoder
-import com.example.h264encoderdemo.databinding.ActivityMainBinding
+import com.example.h264encoderdemo.coder.encoder.VideoEncoder
+import com.example.h264encoderdemo.databinding.ActivityScreenShareBinding
+import com.example.h264encoderdemo.queue.MediaBufferQueue
 import com.example.h264encoderdemo.transmit.Sender
 import kotlin.math.roundToInt
+import kotlin.properties.Delegates
 
 
-class ScreenShareActivity : AppCompatActivity() {
-    private var binding: ActivityMainBinding? = null
-    private var mediaProjectionManager: MediaProjectionManager? = null
+class ScreenShareActivity : BaseActivity() {
+    private val tag = "ScreenShareActivity"
+    private var binding: ActivityScreenShareBinding? = null
+    private var mediaProjectionMgr: MediaProjectionManager? = null
     private var mediaProjection: MediaProjection? = null
-//    private var h265Encoder: H265Encoder? = null
+    private var encoder: VideoEncoder? = null
     private val requestCode = 1
     private var sender: Sender? = null
+    private val size = Point(0, 0)
+    private var densityPercent by Delegates.notNull<Float>()
+    private var queue = MediaBufferQueue()
+    private var defaultFPS = 20
+    private var defaultGOPSize = 15
+    private val screenShareResult = registerForActivityResult(ScreenShare()) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            mediaProjection = mediaProjectionMgr?.getMediaProjection(result.resultCode, result.data!!)
+            // surface: the input of mediaCode-Encoder, the output of mediaProjection
+            encoder?.createInputSurface()?.let { inputSurface ->
+                mediaProjection?.createVirtualDisplay(tag, size.x, size.y, densityPercent.roundToInt(),
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC, inputSurface, null,
+                    null)
+            }
+            sender?.launch()
+            encoder?.launch()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityScreenShareBinding.inflate(layoutInflater)
         setContentView(binding?.root)
-        checkPermission()
-        mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager?
-        binding?.button?.setOnClickListener {
-            val intent = mediaProjectionManager?.createScreenCaptureIntent()
-            startActivityForResult(intent, requestCode)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && requestCode == this.requestCode && data != null) {
-            mediaProjection = mediaProjectionManager?.getMediaProjection(resultCode, data)
-            val displayMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            val densityPercent = displayMetrics.density
-            val width = windowManager.defaultDisplay.width
-            val height = windowManager.defaultDisplay.height
-            mediaProjection?.let {
-//                val encoder = H265Encoder(it, width, height, densityPercent.roundToInt())
-                val encoder = H264Encoder(it, width, height, densityPercent.roundToInt())
-                encoder.init()
-                sender = Sender(encoder)
-                sender?.start()
-//                h265Encoder?.launch()
+        // 获取屏幕的宽高，作为MediaFormat中的宽高
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        densityPercent = displayMetrics.density
+        windowManager.defaultDisplay.getSize(size)
+        encoder = H264Encoder(size.x, size.y, defaultFPS, defaultGOPSize, queue)
+        encoder?.init()
+        // 获取上个页面传递过来的本地地址
+        intent?.getIntExtra("listeningPort", -1)?.let {
+            if (it != -1) {
+                sender = Sender(queue, it)
+            } else {
+                makeText(this, "本地监听端口为空", LENGTH_SHORT).show()
             }
         }
-    }
 
-    private fun checkPermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA
-                ), 1
-            )
-        }
-        return false
+        mediaProjectionMgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager?
+        val intent = mediaProjectionMgr?.createScreenCaptureIntent()
+        screenShareResult.launch(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-//        h265Encoder?.dispose()
-//        h265Encoder = null
+        Log.d(tag, "onDestroy() called")
+        mediaProjectionMgr = null
+        mediaProjection?.stop()
+        mediaProjection = null
+        encoder?.dispose()
+        encoder = null
         sender?.dispose()
         sender = null
+        queue.dispose()
+    }
+}
+
+internal class ScreenShare : ActivityResultContract<Intent, ActivityResult>() {
+    override fun createIntent(context: Context, input: Intent): Intent {
+        return input
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): ActivityResult {
+        return ActivityResult(resultCode, intent)
     }
 }

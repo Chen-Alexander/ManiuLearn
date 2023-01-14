@@ -7,7 +7,7 @@ import java.lang.Exception
 import java.net.URI
 import java.nio.ByteBuffer
 
-class SocketLive {
+class Receiver {
     private val tag = "SocketLive"
     private var socketClient: SocketClient? = null
     var listener: ScreenShareFrameListener? = null

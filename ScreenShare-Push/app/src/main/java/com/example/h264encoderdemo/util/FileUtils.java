@@ -1,8 +1,9 @@
-package com.example.h264encoderdemo;
+package com.example.h264encoderdemo.util;
 
 import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,7 +15,11 @@ public class FileUtils {
         FileOutputStream writer = null;
         try {
             // 打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
-            writer = new FileOutputStream("/data/data/com.example.h264encoderdemo/files/codec.h265", true);
+            File file = new File("/data/data/com.example.ScreenShare/files/codec.h264");
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdir();
+            }
+            writer = new FileOutputStream(file, true);
             writer.write(array);
             writer.write('\n');
 

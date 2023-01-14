@@ -6,17 +6,18 @@ import android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.projection.MediaProjection
+import android.view.Surface
 import com.example.h264encoderdemo.util.FileUtils
 import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.experimental.and
 
-class H265VideoEncoder(
+class H265Encoder(
     private val mediaProjection: MediaProjection,
     private var width: Int,
     private var height: Int,
     private val dpi: Int
-) : VideoEncoder {
+) : Encoder {
     private val tag = "H265Encoder"
     private val vPSNalu = 32
     private val iNalu = 19
@@ -27,7 +28,11 @@ class H265VideoEncoder(
     var dataListener: ScreenShareDataListener? = null
     private var vPSSPSPPS: ByteArray? = null
 
-    fun init() {
+    override fun createInputSurface(): Surface? {
+        return null
+    }
+
+    override fun init() {
         try {
             mediaCodec = MediaCodec.createEncoderByType("video/hevc")
             val mediaFormat = MediaFormat.createVideoFormat(
@@ -60,7 +65,7 @@ class H265VideoEncoder(
         }
     }
 
-    fun launch() {
+    override fun launch() {
         Thread(this).start()
     }
 
@@ -127,7 +132,7 @@ class H265VideoEncoder(
         FileUtils.writeContent(byteArray)
     }
 
-    fun dispose() {
+    override fun dispose() {
         mediaProjection.stop()
         disposed = true
         mediaCodec?.release()
