@@ -12,11 +12,8 @@ import android.media.MediaExtractor.SEEK_TO_NEXT_SYNC
 import android.media.MediaFormat.KEY_MAX_INPUT_SIZE
 import android.util.Log
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
-import kotlin.experimental.and
-import kotlin.experimental.or
 
 
 object MusicProcess {
@@ -26,38 +23,38 @@ object MusicProcess {
     private const val defaultChannelCount = 2
 
     fun mixAudioTrack(
-        context: Context, videoInput: String, audioInput: String, output: String,
-        startTimeUs: Long, endTimeUs: Long, videoVolume: Int, audioVolume: Int
+        context: Context, mediaInput: String, audioInput: String, output: String,
+        startTS: Long, endTS: Long, mediaVolume: Int, audioVolume: Int
     ) {
         val fileDir = context.filesDir
         // 视频的原始PCM
         val videoPcmFile = File(fileDir, "video.pcm")
-        decodePCM(videoInput, videoPcmFile.absolutePath, startTimeUs, endTimeUs)
+        decodePCM(mediaInput, videoPcmFile.absolutePath, startTS, endTS)
         // 新音频的PCM
         val audioPcmFile = File(fileDir, "audio.pcm")
-        decodePCM(audioInput, audioPcmFile.absolutePath, startTimeUs, endTimeUs)
+        decodePCM(audioInput, audioPcmFile.absolutePath, startTS, endTS)
         // 混音
         val mixedPcm = File(fileDir, "mixed.pcm")
 //        mixPcm(videoPcmFile.absolutePath, audioPcmFile.absolutePath, videoVolume, audioVolume,
 //            mixedPcm.absolutePath)
         TestUtil.mixPcm(videoPcmFile.absolutePath, audioPcmFile.absolutePath, mixedPcm.absolutePath,
-            videoVolume, audioVolume)
+            mediaVolume, audioVolume)
 
         val wavFile = File(fileDir, mixedPcm.name.plus(".wav"))
         PcmToWavUtil(44100, CHANNEL_IN_STEREO, 2, ENCODING_PCM_16BIT)
             .pcmToWav(mixedPcm.absolutePath, wavFile.absolutePath)
         // 把原视频和新音频打包写入新文件中
-        mixVideoAndAudio(videoInput, output, startTimeUs, endTimeUs, wavFile.absolutePath)
+        mixVideoAndAudio(mediaInput, output, startTS, endTS, wavFile.absolutePath)
     }
 
     @SuppressLint("WrongConstant")
-    private fun mixVideoAndAudio(videoInput: String, output: String, startTime: Long, endTime: Long,
-                                 wavFilePath: String) {
+    private fun mixVideoAndAudio(videoInputPath: String, mediaOutputPath: String, startTS: Long,
+                                 endTS: Long, wavFilePath: String) {
         // 媒体复用器，用于打包编码后的视频帧和音频帧并输出到文件中
-        val mediaMuxer = MediaMuxer(output, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        val mediaMuxer = MediaMuxer(mediaOutputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
         // 媒体解复用器，用于从源mp4文件中提取出未解码的视频帧和音频帧
         val mediaExtractor = MediaExtractor()
-        mediaExtractor.setDataSource(videoInput)
+        mediaExtractor.setDataSource(videoInputPath)
         // 从源mp4文件中分别找到音频和视频的轨道索引
         val audioTrackIndex = findTrack(mediaExtractor)
         val videoTrackIndex = findTrack(mediaExtractor, MediaType.Video)
@@ -166,7 +163,7 @@ object MusicProcess {
         // 开始编码视频文件并写入到文件
         mediaExtractor.selectTrack(videoTrackIndex)
         // seek到startTime前的一个I帧处
-        mediaExtractor.seekTo(startTime, SEEK_TO_NEXT_SYNC)
+        mediaExtractor.seekTo(startTS, SEEK_TO_NEXT_SYNC)
         // 获取视频轨中的最大帧的大小
         val maxBufSizeOfOriginVideo = videoFormat.getInteger(KEY_MAX_INPUT_SIZE)
         // 申请内存空间(复用之前定义的buf)
@@ -178,17 +175,17 @@ object MusicProcess {
                 // 文件读完
                 break
             }
-            if (sampleTime < startTime) {
+            if (sampleTime < startTS) {
                 // 还没读取到制定的开始时间戳处,丢弃数据，继续向下读
                 mediaExtractor.advance()
                 continue
             }
-            if (sampleTime > endTime) {
+            if (sampleTime > endTS) {
                 // 指定时间段内的数据已经读取完毕
                 break
             }
             // 复用之前定义的bufInfo来写入视频
-            bufInfo.presentationTimeUs = sampleTime - startTime + 600
+            bufInfo.presentationTimeUs = sampleTime - startTS + 600
             bufInfo.flags = mediaExtractor.sampleFlags
             bufInfo.size = mediaExtractor.readSampleData(buf, 0)
             if (bufInfo.size < 0) {
@@ -207,78 +204,26 @@ object MusicProcess {
     }
 
     /**
-     * 混合两个pcm文件
-     * */
-    private fun mixPcm(pcm1Path: String, pcm2Path: String, vol1: Int, vol2: Int, resultPath: String) {
-        val volume1 = vol1 / 100f * 1
-        val volume2 = vol2 / 100f * 1
-//待混音的两条数据流 还原   傅里叶  复杂
-        //待混音的两条数据流 还原   傅里叶  复杂
-        val is1 = FileInputStream(pcm1Path)
-        val is2 = FileInputStream(pcm2Path)
-        var end1 = false
-        var end2 = false
-//        输出的数据流
-        //        输出的数据流
-        val fileOutputStream = FileOutputStream(resultPath)
-        val buffer1 = ByteArray(2048)
-        val buffer2 = ByteArray(2048)
-        val buffer3 = ByteArray(2048)
-        var temp2: Short
-        var temp1: Short
-        while (!end1 || !end2) {
-            if (!end2) {
-                end2 = is2.read(buffer2) == -1
-            }
-            if (!end1) {
-                end1 = is1.read(buffer1) == -1
-            }
-            var voice = 0
-            //2个字节
-            var i = 0
-            while (i < buffer2.size) {
-//前 低字节  1  后面低字节 2  声量值
-//                32767         -32768
-                temp1 = ((buffer1[i] and (0xff).toByte()).toInt() or (buffer1[i + 1] and (0xff).toByte()).toInt() shl 8).toShort()
-                temp2 = ((buffer2[i] and (0xff).toByte()).toInt() or (buffer2[i + 1] and (0xff).toByte()).toInt() shl 8).toShort()
-                voice = (temp1 * volume1 + temp2 * volume2).toInt()
-                if (voice > 32767) {
-                    voice = 32767
-                } else if (voice < -32768) {
-                    voice = -32768
-                }
-                buffer3[i] = (voice and 0xFF).toByte()
-                buffer3[i + 1] = ((voice ushr 8) and 0xFF).toByte()
-                i += 2
-            }
-            fileOutputStream.write(buffer3)
-        }
-        is1.close()
-        is2.close()
-        fileOutputStream.close()
-    }
-
-    /**
      * 从多媒体文件中截取音频并转化为PCM格式
-     * @param mediaPath: 多媒体文件路径
-     * @param output pcm的输出路径
-     * @param startTime 时间起点
-     * @param endTime 时间终点*/
+     * @param audioPath: 多媒体文件路径
+     * @param pcOutputPath pcm的输出路径
+     * @param startTS 时间起点
+     * @param endTS 时间终点*/
     private fun decodePCM(
-        mediaPath: String, output: String, startTime: Long, endTime: Long
+        audioPath: String, pcOutputPath: String, startTS: Long, endTS: Long
     ) {
-        if (endTime <= startTime) {
+        if (endTS <= startTS) {
             Log.e(tag, "time error!")
             return
         }
         var mediaExtractor = MediaExtractor()
-        mediaExtractor.setDataSource(mediaPath)
+        mediaExtractor.setDataSource(audioPath)
         // 拿到音频索引
         val audioTrack = findTrack(mediaExtractor)
         // 选择需要处理的轨道
         mediaExtractor.selectTrack(audioTrack)
         // seek到起始时间点后的一个关键帧处
-        mediaExtractor.seekTo(startTime, SEEK_TO_NEXT_SYNC)
+        mediaExtractor.seekTo(startTS, SEEK_TO_NEXT_SYNC)
         val audioFormat = mediaExtractor.getTrackFormat(audioTrack)
         val mediaCodec =
             audioFormat.getString(MediaFormat.KEY_MIME)?.let { MediaCodec.createDecoderByType(it) }
@@ -291,7 +236,7 @@ object MusicProcess {
             100 * 1024
         }
         // 准备pcm文件写入
-        val pcmFile = File(output)
+        val pcmFile = File(pcOutputPath)
         val pcmFileChannel = FileOutputStream(pcmFile).channel
         // 申请buffer,用以缓存每一帧数据
         val buf = ByteBuffer.allocateDirect(maxBufSize)
@@ -302,10 +247,10 @@ object MusicProcess {
             if (inIndex != null && inIndex >= 0) {
                 // 判断当前帧是否在时间区间内
                 val curSampleTime = mediaExtractor.sampleTime
-                if (curSampleTime < startTime) {
+                if (curSampleTime < startTS) {
                     // 不在时间区间内，丢弃
                     mediaExtractor.advance()
-                } else if (curSampleTime > endTime) {
+                } else if (curSampleTime > endTS) {
                     // 超出时间区间
                     break
                 } else if (curSampleTime == -1L) {

@@ -1,6 +1,8 @@
-package com.example.h264encoderdemo
+package com.example.h264encoderdemo.transmit
 
 import android.util.Log
+import com.example.h264encoderdemo.coder.encoder.H264Encoder
+import com.example.h264encoderdemo.coder.encoder.ScreenShareDataListener
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
@@ -8,7 +10,7 @@ import java.io.IOException
 import java.lang.Exception
 import java.net.InetSocketAddress
 
-class SocketLive(private val encoder: H264Encoder) : ScreenShareDataListener {
+class Sender(private val encoder: H264Encoder) : ScreenShareDataListener {
     private val tag = "SocketLive"
     private var socket: WebSocket? = null
     private var socketServer: WebSocketServer? = null
@@ -18,7 +20,7 @@ class SocketLive(private val encoder: H264Encoder) : ScreenShareDataListener {
         socketServer = object : WebSocketServer(InetSocketAddress(59880)) {
             override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
                 Log.i(tag, "socketServer onOpen")
-                this@SocketLive.socket = conn
+                this@Sender.socket = conn
             }
 
             override fun onClose(conn: WebSocket?, code: Int, reason: String?, remote: Boolean) {

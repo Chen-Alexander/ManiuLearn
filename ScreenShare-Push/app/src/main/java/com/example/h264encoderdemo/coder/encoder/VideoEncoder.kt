@@ -1,21 +1,19 @@
-package com.example.h264encoderdemo
+package com.example.h264encoderdemo.coder.encoder
 
-import android.hardware.display.DisplayManager
 import android.media.MediaCodec
 import android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.media.projection.MediaProjection
+import android.view.Surface
+import com.example.h264encoderdemo.util.FileUtils
 import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.experimental.and
 
 class H264Encoder(
-    private val mediaProjection: MediaProjection,
     private var width: Int,
-    private var height: Int,
-    private val dpi: Int
-) : Runnable {
+    private var height: Int
+) : Encoder {
     private val tag = "H264Encoder"
     private val sPSNalu = 7
     private val iNalu = 5
@@ -26,7 +24,7 @@ class H264Encoder(
     var dataListener: ScreenShareDataListener? = null
     private var sPSPPS: ByteArray? = null
 
-    fun init() {
+    override fun init() {
         try {
             mediaCodec = MediaCodec.createEncoderByType("video/avc")
             val mediaFormat = MediaFormat.createVideoFormat(
@@ -47,19 +45,16 @@ class H264Encoder(
             // 此处第二个参数只在解码时需要传，现在是编码，不需要渲染，所以不需要传
             // flag: CONFIGURE_FLAG_ENCODE   什么意思？
             mediaCodec?.configure(mediaFormat, null, null, CONFIGURE_FLAG_ENCODE)
-            // surface: the input of mediaCode-Encoder, the output of mediaProjection
-            val inputSurface = mediaCodec?.createInputSurface()
-            mediaProjection.createVirtualDisplay(
-                "test", width, height, dpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                inputSurface, null, null
-            )
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    fun launch() {
+    override fun createInputSurface(): Surface? {
+        return mediaCodec?.createInputSurface()
+    }
+
+    override fun launch() {
         Thread(this).start()
     }
 
@@ -126,8 +121,7 @@ class H264Encoder(
         FileUtils.writeContent(byteArray)
     }
 
-    fun dispose() {
-        mediaProjection.stop()
+    override fun dispose() {
         disposed = true
         mediaCodec?.release()
         mediaCodec = null

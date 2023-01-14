@@ -1,4 +1,4 @@
-package com.example.h264encoderdemo
+package com.example.h264encoderdemo.coder.encoder
 
 import android.hardware.display.DisplayManager
 import android.media.MediaCodec
@@ -6,16 +6,17 @@ import android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.media.projection.MediaProjection
+import com.example.h264encoderdemo.util.FileUtils
 import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.experimental.and
 
-class H265Encoder(
+class H265VideoEncoder(
     private val mediaProjection: MediaProjection,
     private var width: Int,
     private var height: Int,
     private val dpi: Int
-) : Runnable {
+) : VideoEncoder {
     private val tag = "H265Encoder"
     private val vPSNalu = 32
     private val iNalu = 19
