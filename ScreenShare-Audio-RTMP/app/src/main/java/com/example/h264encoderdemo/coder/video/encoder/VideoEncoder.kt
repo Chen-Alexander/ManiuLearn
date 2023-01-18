@@ -4,10 +4,13 @@ import android.media.MediaCodec
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
+import com.example.h264encoderdemo.beans.RTMPPacket
+import com.example.h264encoderdemo.beans.RTMPPacketType
 import com.example.h264encoderdemo.queue.MediaBufferQueue
 import com.example.h264encoderdemo.util.FileUtils
 import java.lang.System.currentTimeMillis
 import java.nio.ByteBuffer
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.experimental.and
 import kotlin.math.roundToInt
 
@@ -16,7 +19,7 @@ abstract class VideoEncoder(
     protected var height: Int,
     protected val fps: Int,
     protected val gopSize: Int,
-    private val queue: MediaBufferQueue
+    private val queue: LinkedBlockingQueue<RTMPPacket>
 ) : Encoder {
     open val tag = "VideoEncoder"
     private val sPSNalu = 7
@@ -31,6 +34,8 @@ abstract class VideoEncoder(
             this.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0)
         }
     }
+    private var startTime = 0L
+    private val timeout = 300L
 
     @Volatile
     private var disposed = false
@@ -62,18 +67,26 @@ abstract class VideoEncoder(
                 forceIFrameTS = currentTimeMillis()
             }
             Log.i(tag, "ready execute dequeueOutputBuffer.")
-            val outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, 10 * 1000)
+            var outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, timeout)
             Log.i(tag, "dequeueOutputBuffer outputIndex is $outputIndex.")
-            if (outputIndex != null && outputIndex > -1) {
-                val byteBuffer = mediaCodec?.getOutputBuffer(outputIndex)
-                // 把byteBuffer内的数据转移出来
-                byteBuffer?.let { buffer ->
-                    val index = dealFrame(buffer, bufferInfo)
-                    index?.let {
-                        enqueueBuf(it)
-                    }
+            while (outputIndex != null && outputIndex > -1) {
+                val outputBuf = mediaCodec?.getOutputBuffer(outputIndex)
+                // 获取到编码数据后初始化startTime，是为了使显示时间更精确
+                if (startTime == 0L) {
+                    startTime = bufferInfo.presentationTimeUs
                 }
+                val outData = ByteArray(bufferInfo.size)
+                outputBuf?.get(outData)
+                writeFile(outData)
+                val audioDataPacket = RTMPPacket(
+                    RTMPPacketType.RTMP_PACKET_TYPE_VIDEO.type,
+                    (bufferInfo.presentationTimeUs - startTime) / 1000L
+                )
+                audioDataPacket.buffer = outData
+                // 添加到缓存队列
+                queue.offer(audioDataPacket)
                 mediaCodec?.releaseOutputBuffer(outputIndex, false)
+                outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, timeout)
             }
         }
         // dispose mediaCodec
@@ -86,62 +99,6 @@ abstract class VideoEncoder(
         val interval = ((gopSize.toFloat() * 2.0F) / fps.toFloat()).roundToInt() * 1000L
         val dif = currentTimeMillis() - curTS
         return dif > interval
-    }
-
-    private fun dealFrame(byteBuffer: ByteBuffer, bufInfo: MediaCodec.BufferInfo): Int? {
-        var offset = 4
-        if (byteBuffer[2].compareTo(0x01) == 0) {
-            offset = 3
-        }
-        // 通过第五个字节获取NALU类型
-        when ((byteBuffer[offset] and 0x1F).toInt()) {
-            sPSNalu -> {
-                // 缓存SPS/PPS帧
-                sPSPPS = ByteArray(bufInfo.size)
-                byteBuffer.get(sPSPPS, 0, bufInfo.size)
-            }
-            iNalu -> {
-                sPSPPS?.let {
-                    // 每个IDR帧前边都加上SPS/PPS
-                    val pair = dequeueBuf(it.size + bufInfo.size)
-                    pair?.let { _ ->
-                        System.arraycopy(it, 0, pair.second, 0, it.size)
-                        byteBuffer.get(pair.second, it.size, bufInfo.size)
-                        return pair.first
-                    }
-                }
-            }
-            else -> {
-                // 其他帧类型直接发送
-                val pair = dequeueBuf(bufInfo.size)
-                pair?.let { _ ->
-                    kotlin.runCatching {
-                        byteBuffer.get(pair.second, 0, bufInfo.size)
-                    }.onFailure {
-                        it.printStackTrace()
-                    }
-                    return pair.first
-                }
-            }
-        }
-        return null
-    }
-
-    private fun dequeueBuf(size: Int): Pair<Int, ByteArray>? {
-        val index = queue.dequeue(size)
-        if (index > -1) {
-            val tmp = queue.getBuf(index)
-            return Pair(index, tmp.buf)
-        }
-        Log.e(tag, "未获取到可用缓冲区!")
-        // 获取下标小于0，说明现在无可用缓冲区(当然也可以死循环获取)
-        return null
-    }
-
-    private fun enqueueBuf(index: Int) {
-        // for debug
-        writeFile(queue.getBuf(index).buf)
-        queue.enqueue(index)
     }
 
     private fun writeFile(byteArray: ByteArray) {

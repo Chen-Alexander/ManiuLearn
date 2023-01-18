@@ -5,10 +5,12 @@ import android.media.MediaCodec.CONFIGURE_FLAG_ENCODE
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.view.Surface
+import com.example.h264encoderdemo.beans.RTMPPacket
 import com.example.h264encoderdemo.queue.MediaBufferQueue
 import com.example.h264encoderdemo.util.FileUtils
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.experimental.and
 
 class H264Encoder(
@@ -16,7 +18,7 @@ class H264Encoder(
     height: Int,
     fps: Int,
     gopSize: Int,
-    queue: MediaBufferQueue
+    queue: LinkedBlockingQueue<RTMPPacket>
 ) : VideoEncoder(width, height, fps, gopSize, queue) {
     override val tag = "H264Encoder"
 
@@ -38,7 +40,7 @@ class H264Encoder(
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             )
             // 此处第二个参数只在解码时需要传，现在是编码，不需要渲染，所以不需要传
-            // flag: CONFIGURE_FLAG_ENCODE   什么意思？
+            // flag: CONFIGURE_FLAG_ENCODE: 表示这是个编码器
             mediaCodec?.configure(mediaFormat, null, null, CONFIGURE_FLAG_ENCODE)
         } catch (e: IOException) {
             e.printStackTrace()

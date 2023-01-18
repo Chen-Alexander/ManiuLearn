@@ -6,9 +6,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/**
- * @param perBufSize The size of each buf
- * */
 class MediaBufferQueue() : IMediaBufferQueue {
 
     private val defaultCapacity = 16
@@ -78,7 +75,7 @@ class MediaBufferQueue() : IMediaBufferQueue {
                 }
             } else {
                 // 无free的slot，从队头移除一个(此时队列肯定是满的，所以poll肯定可以拿到数据)
-                val index = queue.take()
+                val index = queue.poll()
                 val slot = bufSlots[index]
                 if (slot.capacity() < size) {
                     requestBuf(size, slot)
@@ -107,7 +104,7 @@ class MediaBufferQueue() : IMediaBufferQueue {
     }
 
     override fun acquire(): Int {
-        val index = queue.take()
+        val index = queue.poll()
         synchronized(bufSlots) {
             val slot = bufSlots[index]
             slot.state = ACQUIRED
