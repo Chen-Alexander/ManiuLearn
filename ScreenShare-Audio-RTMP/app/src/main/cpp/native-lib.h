@@ -1,0 +1,8 @@
+//
+// Created by Administrator on 2023/1/15.
+//
+
+#ifndef SCREENSHARE_AUDIO_RTMP_NATIVE_LIB_H
+#define SCREENSHARE_AUDIO_RTMP_NATIVE_LIB_H
+
+#endif //SCREENSHARE_AUDIO_RTMP_NATIVE_LIB_H
