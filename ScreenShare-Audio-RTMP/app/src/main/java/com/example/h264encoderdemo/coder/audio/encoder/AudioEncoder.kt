@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingQueue
 
 class AudioEncoder(
-    private val queue: LinkedBlockingQueue<RTMPPacket>
+    private val queue: LinkedBlockingQueue<RTMPPacket?>
 ) : Encoder {
     private val tag = "AudioEncoder"
     private var mediaCodec: MediaCodec? = null
@@ -30,6 +30,7 @@ class AudioEncoder(
     private val channelCount = 1
     private val sampleRate = 44100
     private val bitRate = 128_000
+    private val maxInputSize = 10 * 1024
 
     override fun init() {
         runCatching {
@@ -46,6 +47,8 @@ class AudioEncoder(
             )
             // 设置码率
             format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
+            // 设置pcm帧的最大size(输入大小)
+            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, maxInputSize)
             mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC)
             mediaCodec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             // 设置采样率  通道数  采样位数

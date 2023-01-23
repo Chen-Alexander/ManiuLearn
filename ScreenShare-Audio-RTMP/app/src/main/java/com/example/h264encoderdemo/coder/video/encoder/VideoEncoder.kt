@@ -6,12 +6,9 @@ import android.util.Log
 import android.view.Surface
 import com.example.h264encoderdemo.beans.RTMPPacket
 import com.example.h264encoderdemo.beans.RTMPPacketType
-import com.example.h264encoderdemo.queue.MediaBufferQueue
 import com.example.h264encoderdemo.util.FileUtils
 import java.lang.System.currentTimeMillis
-import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingQueue
-import kotlin.experimental.and
 import kotlin.math.roundToInt
 
 abstract class VideoEncoder(
@@ -19,7 +16,7 @@ abstract class VideoEncoder(
     protected var height: Int,
     protected val fps: Int,
     protected val gopSize: Int,
-    private val queue: LinkedBlockingQueue<RTMPPacket>
+    private val queue: LinkedBlockingQueue<RTMPPacket?>
 ) : Encoder {
     open val tag = "VideoEncoder"
     private val sPSNalu = 7
@@ -57,7 +54,7 @@ abstract class VideoEncoder(
         // 数据进行编码，此处只需要通过outputBuffer拿编码后的输出数据即可
         val bufferInfo = MediaCodec.BufferInfo()
         while (true) {
-            Log.i(tag, "disposed is $disposed")
+//            Log.i(tag, "disposed is $disposed")
             if (disposed) {
                 break
             }
@@ -66,9 +63,9 @@ abstract class VideoEncoder(
                 mediaCodec?.setParameters(forIFrameBundle)
                 forceIFrameTS = currentTimeMillis()
             }
-            Log.i(tag, "ready execute dequeueOutputBuffer.")
+//            Log.i(tag, "ready execute dequeueOutputBuffer.")
             var outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, timeout)
-            Log.i(tag, "dequeueOutputBuffer outputIndex is $outputIndex.")
+//            Log.i(tag, "dequeueOutputBuffer outputIndex is $outputIndex.")
             while (outputIndex != null && outputIndex > -1) {
                 val outputBuf = mediaCodec?.getOutputBuffer(outputIndex)
                 // 获取到编码数据后初始化startTime，是为了使显示时间更精确
@@ -78,13 +75,13 @@ abstract class VideoEncoder(
                 val outData = ByteArray(bufferInfo.size)
                 outputBuf?.get(outData)
                 writeFile(outData)
-                val audioDataPacket = RTMPPacket(
+                val videoDataPacket = RTMPPacket(
                     RTMPPacketType.RTMP_PACKET_TYPE_VIDEO.type,
                     (bufferInfo.presentationTimeUs - startTime) / 1000L
                 )
-                audioDataPacket.buffer = outData
+                videoDataPacket.buffer = outData
                 // 添加到缓存队列
-                queue.offer(audioDataPacket)
+                queue.offer(videoDataPacket)
                 mediaCodec?.releaseOutputBuffer(outputIndex, false)
                 outputIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, timeout)
             }

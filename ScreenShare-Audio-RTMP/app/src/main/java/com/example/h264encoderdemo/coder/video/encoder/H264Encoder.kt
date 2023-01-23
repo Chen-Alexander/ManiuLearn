@@ -18,7 +18,7 @@ class H264Encoder(
     height: Int,
     fps: Int,
     gopSize: Int,
-    queue: LinkedBlockingQueue<RTMPPacket>
+    queue: LinkedBlockingQueue<RTMPPacket?>
 ) : VideoEncoder(width, height, fps, gopSize, queue) {
     override val tag = "H264Encoder"
 

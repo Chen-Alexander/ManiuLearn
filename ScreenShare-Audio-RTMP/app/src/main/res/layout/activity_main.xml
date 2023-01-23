@@ -30,8 +30,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="分享"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/find"
+        app:layout_constraintEnd_toStartOf="@id/rtmp"
         app:layout_constraintTop_toTopOf="@id/find" />
+
+    <Button
+        android:id="@+id/rtmp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RTMP"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/share" />
 
     <ListView
         android:id="@+id/listView"

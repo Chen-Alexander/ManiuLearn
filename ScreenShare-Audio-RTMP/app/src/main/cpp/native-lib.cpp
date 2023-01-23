@@ -40,8 +40,8 @@ Java_com_example_h264encoderdemo_transmit_rtmp_RTMPSender_connect(
             break;
         }
         LOGI("connect success");
-    } while (true);
-    if (live) {
+    } while (false);
+    if (!ret && live) {
         free(live);
         live = nullptr;
     }
@@ -158,7 +158,7 @@ RTMPPacket *buildSPSPPSPacket(Live *localLive) {
     packet->m_body[i++] = (len >> 8) & 0xFF;
     packet->m_body[i++] = len & 0xFF;
     // 拷贝视频数据
-    memcpy(reinterpret_cast<void *const>(packet->m_body[i]), buf, len);
+    memcpy(&(packet->m_body[i]), buf, len);
     // 配置packet其他数据项
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
     packet->m_nBodySize = body_size;
@@ -225,7 +225,7 @@ RTMPPacket *buildAudioPacket(int8_t *buf,  const int len, const int type, const 
     } else {
         packet->m_body[1] = 0x01;
     }
-    memcpy(reinterpret_cast<void *const>(packet->m_body[2]), buf, len);
+    memcpy(&packet->m_body[2], buf, len);
     // 配置RTMPPacket的其他配置项
     packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
     packet->m_nBodySize = body_size;
@@ -238,6 +238,8 @@ RTMPPacket *buildAudioPacket(int8_t *buf,  const int len, const int type, const 
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     // TODO 这个字段是干嘛的？
     packet->m_nInfoField2 = localLive->rtmp->m_stream_id;
+    return packet;
+
 }
 
 int sendAudio(int8_t *buf, const int len, const int type, const long tms) {
@@ -258,9 +260,9 @@ Java_com_example_h264encoderdemo_transmit_rtmp_RTMPSender_sendData(
     int ret = 0;
     jbyte *data = env->GetByteArrayElements(data_, nullptr);
     if (type == JAVA_RTMP_PACKET_TYPE_VIDEO) {
-        sendVideo(data, len, (long)tms);
+        ret = sendVideo(data, len, (long)tms);
     } else {
-        sendAudio(data, len, type, (long)tms);
+        ret = sendAudio(data, len, type, (long)tms);
     }
     env->ReleaseByteArrayElements(data_, data, 0);
     return ret;

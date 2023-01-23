@@ -20,7 +20,6 @@ import com.example.h264encoderdemo.coder.video.encoder.H264Encoder
 import com.example.h264encoderdemo.coder.video.encoder.VideoEncoder
 import com.example.h264encoderdemo.databinding.ActivityScreenShareBinding
 import com.example.h264encoderdemo.transmit.rtmp.RTMPSender
-import com.example.h264encoderdemo.transmit.websocket.WebSocketSender
 import java.util.concurrent.LinkedBlockingQueue
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
@@ -38,7 +37,7 @@ class ScreenShareActivity : BaseActivity() {
     private val size = Point(0, 0)
     private var densityPercent by Delegates.notNull<Float>()
     // 音视频缓存队列，生产消费模式，VideoEncoder/AudioEncoder往队列offer数据，sender从队列内take数据
-    private var queue = LinkedBlockingQueue<RTMPPacket>(64)
+    private var queue = LinkedBlockingQueue<RTMPPacket?>(64)
     private var defaultFPS = 20
     private var defaultGOPSize = 15
     private val screenShareResult = registerForActivityResult(ScreenShare()) { result ->
@@ -73,6 +72,7 @@ class ScreenShareActivity : BaseActivity() {
         intent?.getStringExtra("rtmp-url")?.let {
             if (!isEmpty(it)) {
                 rtmpSender = RTMPSender(it, queue)
+            } else {
                 makeText(this, "推流地址为空", LENGTH_SHORT).show()
             }
         }

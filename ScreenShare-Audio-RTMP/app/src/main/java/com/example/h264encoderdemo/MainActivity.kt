@@ -56,6 +56,11 @@ class MainActivity : BaseActivity(), IDiscoveryListener {
                 PlayerActivity.launch(this, it)
             }
         }
+        binding?.rtmp?.setOnClickListener {
+            val intent = Intent(this@MainActivity, ScreenShareActivity::class.java)
+            intent.putExtra("rtmp-url", "rtmp://192.168.1.4:1935/alex/room")
+            startActivity(intent)
+        }
 
         checkPermission()
     }

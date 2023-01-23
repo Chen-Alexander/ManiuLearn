@@ -3,8 +3,11 @@
     package="com.example.h264encoderdemo">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--  NSD need  -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!--  NSD need  -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
