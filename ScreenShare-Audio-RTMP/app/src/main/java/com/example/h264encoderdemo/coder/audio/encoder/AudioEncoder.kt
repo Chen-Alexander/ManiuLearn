@@ -47,6 +47,8 @@ class AudioEncoder(
             )
             // 设置码率
             format.setInteger(MediaFormat.KEY_BIT_RATE, bitRate)
+            format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channelCount)
+            format.setInteger(MediaFormat.KEY_SAMPLE_RATE, sampleRate)
             // 设置pcm帧的最大size(输入大小)
             format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, maxInputSize)
             mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC)

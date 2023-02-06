@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="96688578-289d-4343-8ee5-ba041705b891" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.idea/gradle.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/proguard-rules.pro" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/androidTest/java/com/example/h264encoderdemo/ExampleInstrumentedTest.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/COPYING" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/amf.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/amf.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/bytes.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/dh.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/dhgroups.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/handshake.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/hashswf.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/http.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/librtmp.3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/librtmp.3.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/librtmp.pc.in" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/log.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/log.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/parseurl.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/rtmp.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/rtmp.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/librtmp/rtmp_sys.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/native-lib.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/cpp/native-lib.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/BaseActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/MainActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/PlayerActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/ScreenShareActivity.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/beans/RTMPPacket.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/audio/encoder/AudioEncoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/audio/encoder/Encoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/decoder/H264Decoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/decoder/H265Decoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/encoder/Encoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/encoder/H264Encoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/encoder/H265Encoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/coder/video/encoder/VideoEncoder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/queue/IMediaBufferQueue.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/queue/MediaBufferQueue.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/queue/MediaBufferSlot.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/queue/MediaBufferState.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/transmit/rtmp/RTMPSender.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/transmit/websocket/WebSocketReceiver.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/transmit/websocket/WebSocketSender.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/util/FileUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/java/com/example/h264encoderdemo/util/NetUtil.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/drawable/ic_launcher_background.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/layout/activity_main.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/layout/activity_player.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/layout/activity_screen_share.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-hdpi/ic_launcher.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-mdpi/ic_launcher.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/values-night/themes.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/values/colors.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/values/strings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/main/res/values/themes.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/app/src/test/java/com/example/h264encoderdemo/ExampleUnitTest.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/consumer-rules.pro" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/proguard-rules.pro" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/androidTest/java/com/alexander/discovery/ExampleInstrumentedTest.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/main/AndroidManifest.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/main/java/com/alexander/discovery/DiscoveryMgr.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/main/java/com/alexander/discovery/IDiscovery.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/main/java/com/alexander/discovery/IDiscoveryListener.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/main/java/com/alexander/discovery/util/NetUtil.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/discovery/src/test/java/com/alexander/discovery/ExampleUnitTest.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/gradle.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/gradlew.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ScreenShare-Audio-RTMP/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ScreenShare-Push/.idea/deploymentTargetDropDown.xml" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="2KUD4a0Fk9js1s3SUbQIWdRdgoN" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="96688578-289d-4343-8ee5-ba041705b891" name="Changes" comment="" />
+      <created>1674020078050</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1674020078050</updated>
+      <workItem from="1674020079615" duration="7000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
