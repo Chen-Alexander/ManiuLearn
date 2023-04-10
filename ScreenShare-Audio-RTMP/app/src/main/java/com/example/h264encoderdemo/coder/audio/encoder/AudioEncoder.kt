@@ -135,6 +135,9 @@ class AudioEncoder(
         mediaCodec?.stop()
         mediaCodec?.release()
         mediaCodec = null
+        audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
     }
 
     private fun writeFile(byteArray: ByteArray) {
