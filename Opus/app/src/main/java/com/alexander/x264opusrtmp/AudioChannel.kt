@@ -6,12 +6,9 @@ import android.media.AudioFormat.CHANNEL_IN_MONO
 import android.media.AudioRecord
 import android.media.MediaRecorder.AudioSource
 import android.util.Log
+import com.alexander.x264opusrtmp.Constants.sampleRate
 import com.alexander.x264opusrtmp.util.FileUtils
 import com.alexander.x264opusrtmp.util.Utils.byteArrayToShortArray
-import com.alexander.x264opusrtmp.util.toByteArrayBigEndian
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import kotlin.math.min
 
 class AudioChannel(
     private val livePusher: LivePusher
@@ -24,8 +21,6 @@ class AudioChannel(
     private var audioRecord: AudioRecord? = null
     private val channelCount = 1
     // 输入信号的采样率(Hz)，必须是8000、12000、16000、24000、或48000
-    private val sampleRate = 48000
-//    private val sampleRate = 16000
     /** 帧长约束：
      * opus为了对一个帧进行编码，必须正确地用音频数据的帧(2.5, 5, 10, 20, 40 or 60 ms)
      * 来调用opus_encode()或opus_encode_float()函数。
@@ -37,11 +32,6 @@ class AudioChannel(
     private var mRemainBuf: ByteArray? = null
     private var mRemainSize = 0
     private var audioBuffer: ByteArray? = null
-    /**
-     * opus编码只支持以下几个采样率8k、12k、16k、24k、48k
-     * */
-    private val encodeBitRate = 48000
-//    private val encodeBitRate = 16000
 
     @SuppressLint("MissingPermission")
     fun init(debugFilePath: String) {
@@ -61,7 +51,8 @@ class AudioChannel(
             )
             audioBuffer = ByteArray(minBufSize)
             mRemainBuf = ByteArray(bytesPerTenMS)
-            livePusher.native_setAudioEncInfo(sampleRate, channelCount, encodeBitRate, 3, debugFilePath)
+            // opus编码只支持以下几个采样率8k、12k、16k、24k、48k
+            livePusher.native_setAudioEncInfo(sampleRate, channelCount, sampleRate, 3, debugFilePath)
         }.onFailure {
             it.printStackTrace()
         }

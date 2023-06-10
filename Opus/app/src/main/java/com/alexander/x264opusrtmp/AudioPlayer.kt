@@ -8,6 +8,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.AudioTrack.MODE_STREAM
 import android.util.Log
+import com.alexander.x264opusrtmp.Constants.sampleRate
 import com.alexander.x264opusrtmp.util.Utils
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -31,9 +32,6 @@ class AudioPlayer(
     private val channelConfig = CHANNEL_OUT_MONO
 
     // 输入信号的采样率(Hz)，必须是8000、12000、16000、24000、或48000
-    private val sampleRate = 48000
-//    private val sampleRate = 16000
-
     /** 帧长约束：
      * opus为了对一个帧进行编码，必须正确地用音频数据的帧(2.5, 5, 10, 20, 40 or 60 ms)
      * 来调用opus_encode()或opus_encode_float()函数。
