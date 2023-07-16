@@ -3,15 +3,19 @@
 #include "safe_queue.h"
 #include "rtmp.h"
 #include "AudioOpusEncodeChannel.h"
+#include "AudioAACEncodeChannel_fdkaac.h"
 #include "AudioOpusDecodeChannel.h"
 #include "MyLog.h"
 #include "modules/audio_processing/legacy_ns/noise_suppression_x.h"
+#include "AudioAACEncodeChannel.h"
 
 // 生产消费队列
 SafeQueue<RTMPPacket *> packets;
 // 是否开始工作的标记
 bool isStart = false;
 AudioOpusEncodeChannel *opusEncodeChannel;
+AudioAACEncodeChannel_fdkaac *aacEncodeChannel;
+//AudioAACEncodeChannel *aacEncodeChannel;
 JavaVM *javaVm = nullptr;
 JNIEnv *jniEnv = nullptr;
 pthread_t pid;
@@ -114,6 +118,8 @@ JNIEXPORT void JNICALL
 Java_com_alexander_x264opusrtmp_LivePusher_native_1init(JNIEnv *env, jobject thiz, jboolean isDebug) {
     opusEncodeChannel = new AudioOpusEncodeChannel(isDebug);
     opusDecodeChannel = new AudioOpusDecodeChannel(isDebug);
+    aacEncodeChannel = new AudioAACEncodeChannel_fdkaac(isDebug);
+//    aacEncodeChannel = new AudioAACEncodeChannel(isDebug);
 }
 
 extern "C"
@@ -158,12 +164,63 @@ JNIEXPORT void JNICALL
 Java_com_alexander_x264opusrtmp_LivePusher_native_1pushAudio(JNIEnv *env, jobject thiz,
                                                              jshortArray data_) {
     if (opusEncodeChannel == nullptr) {
+        LOGE("opusEncodeChannel is null!");
         return;
     }
     jshort *data = env->GetShortArrayElements(data_, nullptr);
     jint size = env->GetArrayLength(data_);
     opusEncodeChannel->encodeData(data, size);
     env->ReleaseShortArrayElements(data_, data, 0);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_alexander_x264opusrtmp_LivePusher_native_1setAACAudioEncInfo(JNIEnv *env, jobject thiz,
+                                                                      jint sample_rate,
+                                                                      jint channel_count,
+                                                                      jstring debug_path) {
+    if (aacEncodeChannel == nullptr) {
+        LOGE("aacEncodeChannel is null!");
+        return 0;
+    }
+    char * debugPath = const_cast<char *>(env->GetStringUTFChars(debug_path,
+                                                                 nullptr));
+    aacEncodeChannel->setAudioEncodeInfo(sample_rate, channel_count,
+                                         debugPath);
+
+//    aacEncodeChannel->process("/data/data/com.alexander.x264opusrtmp/files/audio.pcm",
+//                              "/data/data/com.alexander.x264opusrtmp/files/audio.aac");
+    env->ReleaseStringUTFChars(debug_path, debugPath);
+//    return aacEncodeChannel->getInputByteNum();
+    return 0;
+}
+
+//extern "C"
+//JNIEXPORT void JNICALL
+//Java_com_alexander_x264opusrtmp_LivePusher_native_1pushAACAudio(JNIEnv *env, jobject thiz,
+//                                                                jshortArray data_) {
+//    if (aacEncodeChannel == nullptr) {
+//        LOGE("aacEncodeChannel is null!");
+//        return;
+//    }
+//    short *data = env->GetShortArrayElements(data_, nullptr);
+//    jint size = env->GetArrayLength(data_);
+//    aacEncodeChannel->encodeData(data, size);
+//    env->ReleaseShortArrayElements(data_, data, 0);
+//}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_alexander_x264opusrtmp_LivePusher_native_1pushAACAudio(JNIEnv *env, jobject thiz,
+                                                                jbyteArray data_) {
+    if (aacEncodeChannel == nullptr) {
+        LOGE("aacEncodeChannel is null!");
+        return;
+    }
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+    jint size = env->GetArrayLength(data_);
+    aacEncodeChannel->encodeData(reinterpret_cast<int32_t *>(data), size);
+    env->ReleaseByteArrayElements(data_, data, 0);
 }
 
 extern "C"
@@ -217,66 +274,3 @@ Java_com_alexander_x264opusrtmp_LivePusher_native_1OpusDecode(JNIEnv *env, jobje
     env->ReleaseShortArrayElements(decoded_, decoded, 0);
     return ret;
 }
-
-//extern "C"
-//JNIEXPORT jlong JNICALL
-//Java_com_alexander_x264opusrtmp_LivePusher_WebRtcNsx_1Create(JNIEnv *env, jobject thiz) {
-//    return reinterpret_cast<jlong>(WebRtcNsx_Create());
-//}
-//
-//extern "C"
-//JNIEXPORT jint JNICALL
-//Java_com_alexander_x264opusrtmp_LivePusher_WebRtcNsx_1Init(JNIEnv *env, jobject thiz,
-//                                                           jlong nsx_handler, jint frequency) {
-//    NsxHandle *nsxHandle = reinterpret_cast<NsxHandle *>(nsx_handler);
-//    if (nsxHandle == nullptr) {
-//        LOGE("parameter nsx_handler is error!");
-//        return -1;
-//    }
-//    int ret = WebRtcNsx_Init(nsxHandle, frequency);
-//    return ret;
-//}
-//
-//extern "C"
-//JNIEXPORT jint JNICALL
-//Java_com_alexander_x264opusrtmp_LivePusher_WebRtcNsx_1SetPolicy(JNIEnv *env, jobject thiz,
-//                                                                jlong nsx_handler, jint mode) {
-//    NsxHandle *nsxHandle = reinterpret_cast<NsxHandle *>(nsx_handler);
-//    if (nsxHandle == nullptr) {
-//        LOGE("parameter nsx_handler is error!");
-//        return -1;
-//    }
-//    int ret = WebRtcNsx_set_policy(nsxHandle, mode);
-//    return ret;
-//}
-//
-//extern "C"
-//JNIEXPORT void JNICALL
-//Java_com_alexander_x264opusrtmp_LivePusher_WebRttcNsx_1Process(JNIEnv *env, jobject thiz,
-//                                                               jlong nsx_handler,
-//                                                               jshortArray speech_frame_,
-//                                                               jint num_bans,
-//                                                               jshortArray out_frame_) {
-//    NsxHandle *nsxHandle = reinterpret_cast<NsxHandle *>(nsx_handler);
-//    if (nsxHandle == nullptr) {
-//        LOGE("parameter nsx_handler is error!");
-//        return ;
-//    }
-//    jshort *spFrame = env->GetShortArrayElements(speech_frame_, nullptr);
-//    jshort *outFrame = env->GetShortArrayElements(out_frame_, nullptr);
-//    WebRtcNsx_Process(nsxHandle, &spFrame, num_bans, &outFrame);
-//    env->ReleaseShortArrayElements(speech_frame_, spFrame, 0);
-//    env->ReleaseShortArrayElements(out_frame_, outFrame, 0);
-//}
-//
-//extern "C"
-//JNIEXPORT void JNICALL
-//Java_com_alexander_x264opusrtmp_LivePusher_WebRtcNsx_1Free(JNIEnv *env, jobject thiz,
-//                                                           jlong nsx_handler) {
-//    NsxHandle *nsxHandle = reinterpret_cast<NsxHandle *>(nsx_handler);
-//    if (nsxHandle == nullptr) {
-//        LOGE("parameter nsx_handler is error!");
-//        return ;
-//    }
-//    WebRtcNsx_Free(nsxHandle);
-//}

@@ -32,6 +32,14 @@ class LivePusher() {
 
     external fun native_pushAudio(data: ShortArray?)
 
+    external fun native_setAACAudioEncInfo(
+        sampleRate: Int,
+        channelCount: Int,
+        debugPath: String?
+    ): Int
+
+    external fun native_pushAACAudio(data: ByteArray?)
+
     external fun native_stop()
 
     external fun native_release()
@@ -56,14 +64,4 @@ class LivePusher() {
         native_stop()
         native_release()
     }
-
-//    external fun WebRtcNsx_Create(): Long
-//
-//    external fun WebRtcNsx_Init(nsxHandler: Long, frequency: Int): Int
-//
-//    external fun WebRtcNsx_SetPolicy(nsxHandler: Long, mode: Int): Int
-//
-//    external fun WebRttcNsx_Process(nsxHandler: Long, speechFrame: ShortArray, numBans: Int, outFrame: ShortArray)
-//
-//    external fun WebRtcNsx_Free(nsxHandler: Long)
 }

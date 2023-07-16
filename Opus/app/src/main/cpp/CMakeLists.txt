@@ -12,14 +12,22 @@ project("opusaudio")
 #CMAKE_SOURCE_DIR系统变量
 message(${CMAKE_SOURCE_DIR})
 message(${ANDROID_ABI})
+# rtmp
 include_directories(${CMAKE_SOURCE_DIR}/librtmp)
 add_subdirectory(librtmp)
+# opus
 include_directories(${CMAKE_SOURCE_DIR}/opus)
 add_subdirectory(opus)
-#include_directories(${CMAKE_SOURCE_DIR}/fdk-aac-2.0.2)
-#add_subdirectory(fdk-aac-2.0.2)
+# fdk_aac
+include_directories(${CMAKE_SOURCE_DIR}/faac-1_29_9_2)
+add_subdirectory(faac-1_29_9_2)
+# webrtc_ns
 include_directories(${CMAKE_SOURCE_DIR}/webrtc_ns)
 add_subdirectory(webrtc_ns)
+# ffmpeg
+include_directories(${CMAKE_SOURCE_DIR}/ffmpeg/include)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}")
+message("11111${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -56,9 +64,19 @@ target_link_libraries( # Specifies the target library.
         opusaudio
         rtmp
         opus
-#        fdk-aac
+        fdk-aac-lib
+#        fdk-aad-lib
         legacy_ns-lib
+
+        avcodec
+#        avdevice
+        avfilter
+        avformat
+        avutil
+        swresample
+        swscale
 
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib})
+        ${log-lib}
+        android)

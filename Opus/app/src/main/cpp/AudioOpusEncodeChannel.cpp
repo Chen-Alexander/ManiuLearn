@@ -93,13 +93,13 @@ void AudioOpusEncodeChannel::setAudioEncodeInfo(int sampleRate, int channelCount
 }
 
 void AudioOpusEncodeChannel::encodeData(short *data, int size) {
-//    auto *noise_data = static_cast<short *>(malloc(size));
+    auto *noise_data = static_cast<short *>(malloc(size));
     // 采样率和speechFrame输就长度的对应值  8k:80  16k:160  32k:320
     // 所以，采样率时16k的话，此处就需要20ms的数据，这样，data在这个short数组长度就是160
-//    WebRtcNsx_Process(nsxHandle, &data, 1, &noise_data);
+    WebRtcNsx_Process(nsxHandle, &data, 1, &noise_data);
     int out_size = size / 8;
     auto *encode_out_bytes = static_cast<unsigned char *>(malloc(out_size));
-    int real_out_size = opus_encode(opusEncoder, data, size,
+    int real_out_size = opus_encode(opusEncoder, noise_data, size,
                                     encode_out_bytes,
                                     out_size);
     if (real_out_size < 0) {
@@ -108,12 +108,12 @@ void AudioOpusEncodeChannel::encodeData(short *data, int size) {
     /** Debug */
     if (this->isDebug) {
         // Write data to the file
-//        fwrite(noise_data, 1, size, debug_noise_fp);
-//        printf("noise data written.");
+        fwrite(noise_data, 1, size, debug_noise_fp);
+        printf("noise data written.");
         fwrite(encode_out_bytes, 1, real_out_size, debug_opus_fp);
         printf("Data written.");
     }
     /** Debug */
-//    free(noise_data);
+    free(noise_data);
     free(encode_out_bytes);
 }

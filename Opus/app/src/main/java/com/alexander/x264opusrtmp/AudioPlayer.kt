@@ -28,8 +28,8 @@ class AudioPlayer(
 
     @Volatile
     private var disposed = false
-    private val channelCount = 1
-    private val channelConfig = CHANNEL_OUT_MONO
+    private val channelCount = Constants.channelCount
+    private val channelConfig = Constants.outChannelConfig
 
     // 输入信号的采样率(Hz)，必须是8000、12000、16000、24000、或48000
     /** 帧长约束：

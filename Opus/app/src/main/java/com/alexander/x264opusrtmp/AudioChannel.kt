@@ -2,12 +2,14 @@ package com.alexander.x264opusrtmp
 
 import android.annotation.SuppressLint
 import android.media.AudioFormat
-import android.media.AudioFormat.CHANNEL_IN_MONO
 import android.media.AudioRecord
 import android.media.MediaRecorder.AudioSource
 import android.util.Log
+import com.alexander.x264opusrtmp.Constants.inChannelConfig
+import com.alexander.x264opusrtmp.Constants.channelCount
+import com.alexander.x264opusrtmp.Constants.encodeBitRate
 import com.alexander.x264opusrtmp.Constants.sampleRate
-import com.alexander.x264opusrtmp.util.FileUtils
+import com.alexander.x264opusrtmp.util.AudioFileUtils
 import com.alexander.x264opusrtmp.util.Utils.byteArrayToShortArray
 
 class AudioChannel(
@@ -19,7 +21,6 @@ class AudioChannel(
     private var disposed = false
     private var minBufSize = 0
     private var audioRecord: AudioRecord? = null
-    private val channelCount = 1
     // 输入信号的采样率(Hz)，必须是8000、12000、16000、24000、或48000
     /** 帧长约束：
      * opus为了对一个帧进行编码，必须正确地用音频数据的帧(2.5, 5, 10, 20, 40 or 60 ms)
@@ -32,6 +33,7 @@ class AudioChannel(
     private var mRemainBuf: ByteArray? = null
     private var mRemainSize = 0
     private var audioBuffer: ByteArray? = null
+    private var debugMode = true
 
     @SuppressLint("MissingPermission")
     fun init(debugFilePath: String) {
@@ -39,20 +41,24 @@ class AudioChannel(
             // 初始化audioRecord
             minBufSize = AudioRecord.getMinBufferSize(
                 sampleRate,
-                CHANNEL_IN_MONO,
+                inChannelConfig,
                 AudioFormat.ENCODING_PCM_16BIT
             ) + 2048
             audioRecord = AudioRecord(
                 AudioSource.MIC,
                 sampleRate,
-                CHANNEL_IN_MONO,
+                inChannelConfig,
                 AudioFormat.ENCODING_PCM_16BIT,
                 minBufSize
             )
             audioBuffer = ByteArray(minBufSize)
             mRemainBuf = ByteArray(bytesPerTenMS)
             // opus编码只支持以下几个采样率8k、12k、16k、24k、48k
-            livePusher.native_setAudioEncInfo(sampleRate, channelCount, sampleRate, 3, debugFilePath)
+            livePusher.native_setAudioEncInfo(sampleRate, channelCount, encodeBitRate, 3, debugFilePath)
+//            livePusher.native_setAACAudioEncInfo(sampleRate, channelCount, debugFilePath)
+            if (debugMode) {
+                AudioFileUtils.initAudioFile()
+            }
         }.onFailure {
             it.printStackTrace()
         }
@@ -78,8 +84,9 @@ class AudioChannel(
             // 读取原始pcm数据
             audioBuffer?.let {
                 var pcmLen = audioRecord?.read(it, 0, minBufSize) ?: 0
-//                val fileByteArray = it.toByteArrayBigEndian()
-                FileUtils.writeAudioBytes(it)
+                if (debugMode) {
+//                    AudioFileUtils.writeAudioBytes(it)
+                }
                 if (pcmLen <= 0) {
                     // 继续读取
                     return@let
@@ -112,6 +119,7 @@ class AudioChannel(
                     System.arraycopy(data, hasHandleSize, bytes, 0, readCount)
                     val shortArray = byteArrayToShortArray(bytes)
                     livePusher.native_pushAudio(shortArray)
+//                    livePusher.native_pushAACAudio(bytes)
                     hasHandleSize += readCount
                 }
             }
@@ -119,6 +127,9 @@ class AudioChannel(
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
+        if (debugMode) {
+            AudioFileUtils.release()
+        }
     }
 
 
