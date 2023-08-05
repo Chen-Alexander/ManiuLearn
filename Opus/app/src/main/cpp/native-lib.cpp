@@ -141,12 +141,12 @@ Java_com_alexander_x264opusrtmp_LivePusher_native_1start(JNIEnv *env, jobject th
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_alexander_x264opusrtmp_LivePusher_native_1setAudioEncInfo(JNIEnv *env, jobject thiz,
-                                                                   jint sample_rate,
-                                                                   jint channel_count,
-                                                                   jint bit_rate,
-                                                                   jint complexity,
-                                                                   jstring debugPath_) {
+Java_com_alexander_x264opusrtmp_LivePusher_native_1setOpusEncInfo(JNIEnv *env, jobject thiz,
+                                                                  jint sample_rate,
+                                                                  jint channel_count,
+                                                                  jint bit_rate,
+                                                                  jint complexity,
+                                                                  jstring debugPath_) {
     char *debugPath = const_cast<char *>(env->GetStringUTFChars(debugPath_, 0));
     if (opusEncodeChannel->isDebug && strlen(debugPath) < 0) {
         strcpy(debugPath, default_debug_path);
@@ -161,8 +161,8 @@ Java_com_alexander_x264opusrtmp_LivePusher_native_1setAudioEncInfo(JNIEnv *env, 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_alexander_x264opusrtmp_LivePusher_native_1pushAudio(JNIEnv *env, jobject thiz,
-                                                             jshortArray data_) {
+Java_com_alexander_x264opusrtmp_LivePusher_native_1pushOpusAudio(JNIEnv *env, jobject thiz,
+                                                                 jshortArray data_) {
     if (opusEncodeChannel == nullptr) {
         LOGE("opusEncodeChannel is null!");
         return;

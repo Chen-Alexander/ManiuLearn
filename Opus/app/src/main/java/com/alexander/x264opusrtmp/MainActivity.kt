@@ -14,6 +14,10 @@ import com.alexander.x264opusrtmp.util.PcmToWavUtil
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val livePusher by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        LivePusher()
+    }
+    private var audioPlayer: AudioPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,12 +32,23 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.playOpus.setOnClickListener {
-            val livePusher = LivePusher()
-            val audioPlayer = AudioPlayer(this, livePusher)
-            audioPlayer.init("/data/data/com.alexander.x264opusrtmp/files/audio.opus")
-            audioPlayer.launch()
+        binding.delBtn.setOnClickListener {
+            val files = filesDir.listFiles()
+            files?.forEach {
+                it.delete()
+            }
         }
+
+        binding.playOpus.setOnClickListener {
+            audioPlayer = AudioPlayer(this, livePusher)
+            audioPlayer?.init("/data/data/com.alexander.x264opusrtmp/files/audio.opus")
+            audioPlayer?.launch()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        audioPlayer?.dispose()
     }
 
     fun checkPermission(): Boolean {

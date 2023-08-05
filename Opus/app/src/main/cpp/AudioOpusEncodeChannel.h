@@ -11,6 +11,7 @@
 #include "native-lib.h"
 #include "opus.h"
 #include "modules/audio_processing/legacy_ns/noise_suppression_x.h"
+#include "ConvertUtil.h"
 
 class AudioOpusEncodeChannel {
 
@@ -24,8 +25,10 @@ public:
     bool isDebug = false;
 
 private:
+    ConvertUtil convertUtil = ConvertUtil();
     OpusEncoder *opusEncoder = nullptr;
     NsxHandle *nsxHandle = nullptr;
+    FILE *debug_original_fp = nullptr;
     FILE *debug_opus_fp = nullptr;
     FILE *debug_noise_fp = nullptr;
 };

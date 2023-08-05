@@ -8,7 +8,7 @@ import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.AudioTrack.MODE_STREAM
 import android.util.Log
-import com.alexander.x264opusrtmp.Constants.sampleRate
+import com.alexander.x264opusrtmp.Constants.opusSampleRate
 import com.alexander.x264opusrtmp.util.Utils
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -39,13 +39,13 @@ class AudioPlayer(
      * 120, 240, 480, 960, 1920, 2880。即：
      *    frame_size = 采样率 * 帧时间 / 1000，例如16000 * 10 / 1000即表示在10ms内的采样次数
      * 因为需要满足帧时间长度为10,20,40,60ms这些才能编码opus，因而需要对输入数据进行缓冲裁剪 */
-    private val frameSize = sampleRate * 20 / 1000
+    private val frameSize = opusSampleRate * channelCount * 20 / 1000
     private var opusFilePath: String? = null
-    private val bufSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig, ENCODING_PCM_16BIT)
+    private val bufSize = AudioTrack.getMinBufferSize(opusSampleRate, channelConfig, ENCODING_PCM_16BIT)
     private val audioAttributes =
         AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_MUSIC).build()
     private val audioFormat = Builder().setEncoding(ENCODING_PCM_16BIT)
-        .setSampleRate(sampleRate).setChannelMask(channelConfig)
+        .setSampleRate(opusSampleRate).setChannelMask(channelConfig)
         .build()
     private var audioManager: AudioManager? = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     private val sessionId = audioManager?.generateAudioSessionId()
@@ -75,7 +75,7 @@ class AudioPlayer(
             pcmFile.createNewFile()
             filePcmOutputStream = FileOutputStream(pcmFile)
             filePcmBufferedOutputStream = BufferedOutputStream(filePcmOutputStream)
-            livePusher.native_setOpusDecInfo(sampleRate, channelCount)
+            livePusher.native_setOpusDecInfo(opusSampleRate, channelCount)
         }.onFailure {
             it.printStackTrace()
         }

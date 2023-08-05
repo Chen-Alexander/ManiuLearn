@@ -28,6 +28,10 @@ AudioOpusEncodeChannel::~AudioOpusEncodeChannel() {
             // Close the file
             fclose(debug_opus_fp);
         }
+        if (debug_original_fp != nullptr) {
+            // Close the file
+            fclose(debug_original_fp);
+        }
     }
     /** Debug */
 }
@@ -53,6 +57,7 @@ void AudioOpusEncodeChannel::setAudioEncodeInfo(int sampleRate, int channelCount
     opus_encoder_ctl(opusEncoder, OPUS_SET_BITRATE(bitRate));
     opus_encoder_ctl(opusEncoder, OPUS_SET_COMPLEXITY(complexity));
     opus_encoder_ctl(opusEncoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+    opus_encoder_ctl(opusEncoder, OPUS_SET_FORCE_CHANNELS(channelCount));
     opus_encoder_ctl(opusEncoder, OPUS_SET_LSB_DEPTH(16));
     opus_encoder_ctl(opusEncoder, OPUS_SET_DTX(0));
     opus_encoder_ctl(opusEncoder, OPUS_SET_INBAND_FEC(0));
@@ -69,6 +74,15 @@ void AudioOpusEncodeChannel::setAudioEncodeInfo(int sampleRate, int channelCount
     if (this->isDebug) {
         char *local_debugFilePath = static_cast<char *>(malloc(strlen(debugFilePath)));
         strcpy(local_debugFilePath, debugFilePath);
+        const char *originalPcmFileName = strcat(local_debugFilePath, ".pcm");
+        // Delete the file if it exists
+        remove(originalPcmFileName);
+        // Open the file for writing in binary mode (append mode)
+        debug_original_fp = fopen(originalPcmFileName, "ab");
+        if (debug_original_fp == nullptr) {
+            fprintf(stderr, "Error opening original pcm file %s\n", originalPcmFileName);
+            exit(1);
+        }
         const char *noisePcmFileName = strcat(strcat(local_debugFilePath, "_noise"), ".pcm");
         // Delete the file if it exists
         remove(noisePcmFileName);
@@ -94,12 +108,12 @@ void AudioOpusEncodeChannel::setAudioEncodeInfo(int sampleRate, int channelCount
 
 void AudioOpusEncodeChannel::encodeData(short *data, int size) {
     auto *noise_data = static_cast<short *>(malloc(size));
-    // 采样率和speechFrame输就长度的对应值  8k:80  16k:160  32k:320
+    // 采样率和speechFrame输入长度的对应值  8k:80  16k:160  32k:320
     // 所以，采样率时16k的话，此处就需要20ms的数据，这样，data在这个short数组长度就是160
     WebRtcNsx_Process(nsxHandle, &data, 1, &noise_data);
     int out_size = size / 8;
     auto *encode_out_bytes = static_cast<unsigned char *>(malloc(out_size));
-    int real_out_size = opus_encode(opusEncoder, noise_data, size,
+    int real_out_size = opus_encode(opusEncoder, data, size,
                                     encode_out_bytes,
                                     out_size);
     if (real_out_size < 0) {
@@ -108,8 +122,19 @@ void AudioOpusEncodeChannel::encodeData(short *data, int size) {
     /** Debug */
     if (this->isDebug) {
         // Write data to the file
-        fwrite(noise_data, 1, size, debug_noise_fp);
+        int bytesLen = size * 2;
+        auto* bytesArray = static_cast<unsigned char *>(malloc(bytesLen));
+        convertUtil.shortArrayToByteArray(data, size, bytesArray);
+        fwrite(bytesArray, 1, bytesLen, debug_original_fp);
+        free(bytesArray);
+        printf("original data written.");
+
+        auto* noiseBytesArray = static_cast<unsigned char *>(malloc(bytesLen));
+        convertUtil.shortArrayToByteArray(noise_data, size, noiseBytesArray);
+        fwrite(noiseBytesArray, 1, bytesLen, debug_noise_fp);
+        free(noiseBytesArray);
         printf("noise data written.");
+
         fwrite(encode_out_bytes, 1, real_out_size, debug_opus_fp);
         printf("Data written.");
     }

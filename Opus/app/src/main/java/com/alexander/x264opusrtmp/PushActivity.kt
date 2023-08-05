@@ -48,4 +48,8 @@ class PushActivity : AppCompatActivity() {
     fun startLive(view: View?) {
         livePusher.startLive("rtmp://192.168.0.104:1935/alex")
     }
+
+    fun stopLive(view: View?) {
+        livePusher.dispose()
+    }
 }

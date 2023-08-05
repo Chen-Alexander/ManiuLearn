@@ -22,7 +22,7 @@ class LivePusher() {
 
     private external fun native_start(path: String?)
 
-    external fun native_setAudioEncInfo(
+    external fun native_setOpusEncInfo(
         sampleRate: Int,
         channelCount: Int,
         bitRate: Int,
@@ -30,7 +30,7 @@ class LivePusher() {
         debugPath: String?
     )
 
-    external fun native_pushAudio(data: ShortArray?)
+    external fun native_pushOpusAudio(data: ShortArray?)
 
     external fun native_setAACAudioEncInfo(
         sampleRate: Int,

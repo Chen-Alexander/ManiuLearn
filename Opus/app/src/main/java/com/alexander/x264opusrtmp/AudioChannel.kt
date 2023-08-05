@@ -7,8 +7,8 @@ import android.media.MediaRecorder.AudioSource
 import android.util.Log
 import com.alexander.x264opusrtmp.Constants.inChannelConfig
 import com.alexander.x264opusrtmp.Constants.channelCount
-import com.alexander.x264opusrtmp.Constants.encodeBitRate
-import com.alexander.x264opusrtmp.Constants.sampleRate
+import com.alexander.x264opusrtmp.Constants.opusEncodeBitRate
+import com.alexander.x264opusrtmp.Constants.opusSampleRate
 import com.alexander.x264opusrtmp.util.AudioFileUtils
 import com.alexander.x264opusrtmp.util.Utils.byteArrayToShortArray
 
@@ -29,7 +29,7 @@ class AudioChannel(
      * 120, 240, 480, 960, 1920, 2880。即：
      *    frame_size = 采样率 * 帧时间 / 1000，例如16000 * 10 / 1000即表示在20ms内的采样次数
      * 因为需要满足帧时间长度为10,20,40,60ms这些才能编码opus，因而需要对输入数据进行缓冲裁剪 */
-    private val bytesPerTenMS = sampleRate * 20 / 1000
+    private val bytesPerTenMS = opusSampleRate * channelCount * 20 / 1000
     private var mRemainBuf: ByteArray? = null
     private var mRemainSize = 0
     private var audioBuffer: ByteArray? = null
@@ -40,13 +40,13 @@ class AudioChannel(
         runCatching {
             // 初始化audioRecord
             minBufSize = AudioRecord.getMinBufferSize(
-                sampleRate,
+                opusSampleRate,
                 inChannelConfig,
                 AudioFormat.ENCODING_PCM_16BIT
             ) + 2048
             audioRecord = AudioRecord(
                 AudioSource.MIC,
-                sampleRate,
+                opusSampleRate,
                 inChannelConfig,
                 AudioFormat.ENCODING_PCM_16BIT,
                 minBufSize
@@ -54,7 +54,7 @@ class AudioChannel(
             audioBuffer = ByteArray(minBufSize)
             mRemainBuf = ByteArray(bytesPerTenMS)
             // opus编码只支持以下几个采样率8k、12k、16k、24k、48k
-            livePusher.native_setAudioEncInfo(sampleRate, channelCount, encodeBitRate, 3, debugFilePath)
+            livePusher.native_setOpusEncInfo(opusSampleRate, channelCount, opusEncodeBitRate, 3, debugFilePath)
 //            livePusher.native_setAACAudioEncInfo(sampleRate, channelCount, debugFilePath)
             if (debugMode) {
                 AudioFileUtils.initAudioFile()
@@ -118,7 +118,7 @@ class AudioChannel(
                     val bytes = ByteArray(readCount)
                     System.arraycopy(data, hasHandleSize, bytes, 0, readCount)
                     val shortArray = byteArrayToShortArray(bytes)
-                    livePusher.native_pushAudio(shortArray)
+                    livePusher.native_pushOpusAudio(shortArray)
 //                    livePusher.native_pushAACAudio(bytes)
                     hasHandleSize += readCount
                 }
